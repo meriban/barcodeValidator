@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane onKeyReleased="#handleFKeyTyped" prefHeight="267.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.meriban.barcodevalidator.controllers.BarcodeValidatorFXMLController">
+   <children>
+      <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="20.0" tabMaxWidth="150.0" tabMinHeight="20.0" tabMinWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <tabs>
+          <Tab fx:id="addTab" closable="false" onSelectionChanged="#handleAddTabChange" text="Add to file (F1)">
+            <content>
+              <AnchorPane minHeight="180.0" minWidth="200.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox>
+                           <children>
+                              <ScrollPane focusTraversable="false" maxWidth="200.0" prefViewportHeight="200.0" prefViewportWidth="200.0">
+                                 <content>
+                                    <TextArea fx:id="barcodeValidatorAddTextArea" editable="false" focusTraversable="false" maxWidth="190.0" prefHeight="230.0" />
+                                 </content>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding>
+                              </ScrollPane>
+                              <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                                 <children>
+                                    <Label text="Add barcode to list">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="shlBarcodeAddTextField" disable="false" minWidth="200.0" onAction="#handleShlAddTextFieldEnterInput" promptText="Scan SHL barcode" />
+                                    <Label fx:id="invalidShlAddLabel" text="Invalid SHL barcode, try again" textFill="RED" visible="false" />
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="30.0" />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab fx:id="removeTab" closable="false" onSelectionChanged="#handleRemoveTabChange" text="Remove from file (F2)">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox>
+                           <children>
+                              <ScrollPane focusTraversable="false" maxWidth="200.0" prefViewportHeight="200.0" prefViewportWidth="200.0">
+                                 <content>
+                                    <TextArea fx:id="barcodeValidatorRemoveTextArea" editable="false" focusTraversable="false" maxWidth="190.0" prefHeight="230.0" />
+                                 </content>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding>
+                              </ScrollPane>
+                              <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                                 <children>
+                                    <Label text="Remove barcode from list">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="shlBarcodeRemoveTextField" minWidth="200.0" onAction="#handleShlRemoveTextFieldEnterInput" promptText="Scan SHL barcode" />
+                                    <Label fx:id="invalidShlRemoveLabel" text="Invalid SHL barcode, try again" textFill="RED" visible="false" />
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="30.0" />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab fx:id="refTab" closable="false" onSelectionChanged="#handleRefTabChange" text="Record ref copy (F3)">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox>
+                           <children>
+                              <ScrollPane focusTraversable="false" maxWidth="200.0" prefViewportHeight="200.0" prefViewportWidth="200.0">
+                                 <content>
+                                    <TextArea fx:id="barcodeValidatorRefTextArea" editable="false" focusTraversable="false" maxWidth="190.0" prefHeight="230.0" />
+                                 </content>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding>
+                              </ScrollPane>
+                              <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+                                 <children>
+                                    <Label text="Record reference only retained">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="shlBarcodeRefTextField" minWidth="200.0" onAction="#handleShlRefTextFieldEnterInput" promptText="Scan SHL barcode" />
+                                    <Label fx:id="invalidShlRefLabel" text="Invalid SHL barcode, try again" textFill="RED" visible="false" />
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="30.0" />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

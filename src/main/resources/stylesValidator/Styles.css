@@ -1,0 +1,58 @@
+.button-main {
+    -fx-font-weight: bold;
+    -fx-background-color: #3399ff;
+    -fx-text-fill:white;
+}
+
+.toggle-button{
+    -fx-wrap-text: true;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 100px;
+    -fx-max-width: 100px;
+    -fx-max-height: 100px;
+    -fx-min-width: 100px;
+    -fx-min-height: 100px;
+    -fx-text-alignment:center;
+    -fx-content-display:top;
+    -fx-graphic-text-gap:0;
+}
+
+.toggle-button:selected{
+    -fx-font-weight: bold;
+    -fx-background-color: #3399ff, 
+        linear-gradient(to bottom, derive(#3399ff, -20%), #3399ff),
+        linear-gradient(to bottom,
+            derive(#3399ff, -22%) 0%,
+            derive(#3399ff, -13%) 20%,
+            derive(#3399ff, -11%) 50%);
+    -fx-text-fill:white;
+}
+.function-button {
+    -fx-wrap-text: true;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 100px;
+    -fx-max-width: 100px;
+    -fx-max-height: 100px;
+    -fx-min-width: 100px;
+    -fx-min-height: 100px;
+    -fx-text-alignment:center;
+    -fx-content-display:top;
+    -fx-graphic-text-gap:0;
+    -fx-background-color:firebrick;
+}
+
+.function-button:running {
+    -fx-font-weight: bold;
+    -fx-background-color: #3399ff;
+    -fx-text-fill:white;
+}
+
+.separator:vertical {
+    min-width: 16em;
+    max-width: 16em;
+}
+
+.separator:horizontal {
+    min-height: 16em;
+    max-height: 16em;
+}
