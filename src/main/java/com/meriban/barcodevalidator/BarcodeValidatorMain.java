@@ -10,7 +10,6 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -59,9 +58,19 @@ public class BarcodeValidatorMain extends Application {
     }
 
     private void createDataDirectory() {
-        String currentWorkingDir = Paths.get("").toAbsolutePath().normalize().toString();
-        File dataDir = new File(currentWorkingDir, "/data");
-        File backupDir = new File(currentWorkingDir, "/back");
+        File userDir = new File(System.getProperty("user.home") + "/AppData/Local");
+        System.out.println(userDir);
+        //String currentWorkingDir = Paths.get("").toAbsolutePath().normalize().toString();
+        File appDir = new File(userDir, "/BV");
+        if (!appDir.exists()) {
+            if (appDir.mkdir()) {
+                System.out.println(appDir.getAbsolutePath());
+            } else {
+                System.out.println("APPDIR could not be created ");
+            }
+        }
+        File dataDir = new File(appDir, "/data");
+        File backupDir = new File(appDir, "/back");
         if (dataDir.exists()) {
             com.meriban.barcodevalidator.BarcodeValidator.setDataDir(dataDir);
         } else {
