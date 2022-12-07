@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.meriban.barcodevalidator.controllers.CreateLogFXMLController">
+   <children>
+      <VBox layoutX="14.0" layoutY="21.0" spacing="10.0">
+         <children>
+            <Label text="%CREATE_LOG_LABEL">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <padding>
+                  <Insets bottom="5.0" />
+               </padding>
+            </Label>
+            <HBox spacing="30.0">
+               <children>
+                  <GridPane>
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="10.0" prefWidth="20.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <children>
+                        <RadioButton fx:id="newSinceRB" mnemonicParsing="false" selected="true" text="%CREATE_LOG_SINCE_LAST" wrapText="true" GridPane.columnSpan="2">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="createLogRadioGroup" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <ListView fx:id="runsListView" maxHeight="300.0" maxWidth="200.0" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <CheckBox fx:id="includeRemovalsCheckBox" minWidth="120.0" mnemonicParsing="false" selected="true" text="%INCLUDE_REMOVALS_CHECKBOX" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                     </children>
+                  </GridPane>
+                  <GridPane hgap="5.0" vgap="5.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="95.4285888671875" minWidth="10.0" prefWidth="10.85713223048619" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="95.4285888671875" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="76.57143919808524" minWidth="10.0" prefWidth="76.57143919808524" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints maxHeight="10.0" minHeight="10.0" prefHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <children>
+                        <RadioButton fx:id="thisWeekRB" mnemonicParsing="false" text="%CREATE_LOG_THIS_WEEK" toggleGroup="$createLogRadioGroup" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <RadioButton fx:id="lastWeekRB" mnemonicParsing="false" text="%CREATE_LOG_LAST_WEEK" toggleGroup="$createLogRadioGroup" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <RadioButton fx:id="todayRB" mnemonicParsing="false" text="%CREATE_LOG_TODAY" toggleGroup="$createLogRadioGroup" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+                        <RadioButton fx:id="customRB" mnemonicParsing="false" text="%CREATE_LOG_CUSTOM" toggleGroup="$createLogRadioGroup" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" />
+                        <VBox GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="5">
+                           <children>
+                              <Label text="%CREATE_LOG_FROM_LABEL" />
+                              <DatePicker fx:id="fromDatePicker" disable="true" promptText="%DATE_PROMPT_START" />
+                              <Label text="%CREATE_LOG_TO_LABEL" />
+                              <DatePicker fx:id="toDatePicker" disable="true" promptText="%DATE_PROMPT_END" />
+                           </children>
+                           <padding>
+                              <Insets left="20.0" />
+                           </padding>
+                        </VBox>
+                        <Label fx:id="weekLabel" text="*" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="7" />
+                     </children>
+                  </GridPane>
+               </children>
+            </HBox>
+            <GridPane>
+              <columnConstraints>
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Button fx:id="createLogButton" alignment="CENTER" mnemonicParsing="false" onAction="#handleCreateLogButtonOnAction" text="%SAVE_LOG_BUTTON" GridPane.rowIndex="1">
+                     <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../iconsValidator/Entypo_d83d(0)_32.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <padding>
+                        <Insets bottom="-2.0" left="-2.0" right="15.0" top="-2.0" />
+                     </padding>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleCancelButtonOnAction" text="%CANCEL_LOG_BUTTON" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../iconsValidator/Entypo_2716(0)_32.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <padding>
+                        <Insets bottom="-2.0" left="-2.0" right="15.0" top="-2.0" />
+                     </padding>
+                  </Button>
+               </children>
+            </GridPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
