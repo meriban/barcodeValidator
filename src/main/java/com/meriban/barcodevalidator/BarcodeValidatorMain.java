@@ -27,20 +27,20 @@ public class BarcodeValidatorMain extends Application {
         File dataDir = new File(currentWorkingDir, "/data");
         File backupDir = new File (currentWorkingDir, "/backup");
         if(dataDir.exists()){
-            BarcodeValidator.setDataDirDB(dataDir);
+            Validator.setDataDirDB(dataDir);
         }else{
             if(dataDir.mkdir()){
-                BarcodeValidator.setDataDirDB(dataDir);
+                Validator.setDataDirDB(dataDir);
                 System.out.println("DATA DIRECTORY "+dataDir.getAbsolutePath() + " created");
             }else{
                 System.out.println("DATA DIRECTORY could not be created");
             }
         }
         if(backupDir.exists()){
-            BarcodeValidator.setBackupDirDB(backupDir);
+            Validator.setBackupDirDB(backupDir);
         }else{
             if(backupDir.mkdir()){
-                BarcodeValidator.setBackupDirDB(backupDir);
+                Validator.setBackupDirDB(backupDir);
                 System.out.println("BACKUP DIRECTORY " + backupDir.getAbsolutePath()+ " created");
             }else{
                 System.out.println("BACKUP DIRECTORY could not be created");
@@ -60,20 +60,20 @@ public class BarcodeValidatorMain extends Application {
         File dataDir = new File(appDir, "/data");
         File backupDir = new File(appDir, "/back");
         if (dataDir.exists()) {
-            BarcodeValidator.setDataDirDB(dataDir);
+            Validator.setDataDirDB(dataDir);
         } else {
             if (dataDir.mkdir()) {
-                BarcodeValidator.setDataDirDB(dataDir);
+                Validator.setDataDirDB(dataDir);
                 System.out.println("DATA DIRECTORY "+dataDir.getAbsolutePath() + " created");
             } else {
                 System.out.println("DATA DIRECTORY could not be created");
             }
         }
         if (backupDir.exists()) {
-            BarcodeValidator.setBackupDirDB(backupDir);
+            Validator.setBackupDirDB(backupDir);
         } else {
             if (backupDir.mkdir()) {
-                BarcodeValidator.setBackupDirDB(backupDir);
+                Validator.setBackupDirDB(backupDir);
                 System.out.println("BACKUP DIRECTORY " + backupDir.getAbsolutePath()+ " created");
             } else {
                 System.out.println("BACKUP DIRECTORY could not be created");

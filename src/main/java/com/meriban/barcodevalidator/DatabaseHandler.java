@@ -128,7 +128,7 @@ public class DatabaseHandler {
         if(removals){
             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")");
         }else{
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")) AND (action IS NOT "+BarcodeValidator.REMOVE+")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")) AND (action IS NOT "+ Validator.REMOVE+")");
         }
         results = queryStatement.executeQuery();
         return results;
@@ -140,7 +140,7 @@ public class DatabaseHandler {
         if(removals){
             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")");
         }else{
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")) AND (action IS NOT "+BarcodeValidator.REMOVE+")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")) AND (action IS NOT "+ Validator.REMOVE+")");
         }
         results = queryStatement.executeQuery();
         return results;

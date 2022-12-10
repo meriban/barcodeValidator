@@ -7,12 +7,12 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
 
-import static com.meriban.barcodevalidator.controllers.CreateLogFXMLController.*;
+import static com.meriban.barcodevalidator.LogParser.Mode.TODAY;
 
 public class LogParserTest {
     @Test
     public void computeDateTest(){
-        String mode = TODAY;
+        LogParser.Mode mode = TODAY;
         String fromDate = null;
         String toDate = null;
         LocalDate today = LocalDate.now();

@@ -20,6 +20,7 @@ public class PropertiesManager {
 
     //private constructor restricted to this class itself
     private PropertiesManager() {
+        loadProperties();
     }
 
     //static method to create instance of Singleton class
@@ -27,7 +28,6 @@ public class PropertiesManager {
         if (propertiesManager == null) {
             propertiesManager = new PropertiesManager();
         }
-        loadProperties();
         return propertiesManager;
     }
 
@@ -248,5 +248,17 @@ public class PropertiesManager {
             }
         }
         updateApplicationProperty("runs",stringBuilder.toString());
+    }
+
+    /**
+     * Reloads the properties from the respective files. This isn't necessary when calling the
+     * {@link #updateApplicationProperty(String, String)} or {@link #updateDelimitedApplicationProperty(String, ObservableList)}
+     * methods, as these update the underlying {@link Properties} object, but there may be instances where a reload is
+     * required.
+     * @return the {@code PropertyManager} instance
+     */
+    public PropertiesManager reloadProperties(){
+        loadProperties();
+        return PropertiesManager.getInstance();
     }
 }

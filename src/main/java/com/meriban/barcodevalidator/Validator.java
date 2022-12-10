@@ -13,10 +13,9 @@ import java.util.regex.Pattern;
  * action and date and time of entering if the tests are passed.
  * @author meriban
  */
-public class BarcodeValidator {
-
+public class Validator {
     // static variable single_instance of type Singleton
-    private static BarcodeValidator barcodeValidator = null;
+    private static Validator barcodeValidator = null;
     private static DatabaseHandler handler = null;
     public static final int ADD = 1;
     public static final int REMOVE = -1;
@@ -34,23 +33,28 @@ public class BarcodeValidator {
     /**
      * Loads the validation rules and
      */
-    private BarcodeValidator() {
+    private Validator() {
         parseRegexFromProps();
         handler = DatabaseHandler.getInstance();
     }
 
     //GET INSTANCE
     // static method to create instance of Singleton class
-    public static BarcodeValidator getInstance() {
+    public static Validator getInstance() {
         if (barcodeValidator == null)
-            barcodeValidator = new BarcodeValidator();
+            barcodeValidator = new Validator();
         return barcodeValidator;
     }
 
-    //VALIDATOR
-    public boolean validateInput(String barcodeIn, int actionIn) {
-        if (validateBarcode(barcodeIn)) {
-            barcode = barcodeIn;
+    /**
+     * Validates user input and action against the {@code Patterns} in {@link #regex} and allowed action values.
+     * @param userInput the user input
+     * @param actionIn the action value
+     * @return {@code true} if validation is passed, else {@code false}
+     */
+    public boolean validate(String userInput, int actionIn) {
+        if (validateInput(userInput)) {
+            barcode = userInput;
             if (validateAction(actionIn)) {
                 action = actionIn;
                 validated = true;
@@ -61,7 +65,12 @@ public class BarcodeValidator {
         return false;
     }
 
-    private boolean validateBarcode(String input) {
+    /**
+     * Validates the user input against the set validation rules.
+     * @param input the user input
+     * @return {@code true} if input passes validation, else {@code false}
+     */
+    private static boolean validateInput(String input) {
         if (input != null) {
             for (Pattern pattern : regex) {
                 Matcher matcher = pattern.matcher(input);
@@ -82,21 +91,11 @@ public class BarcodeValidator {
         return true;
     }
 
-    @Deprecated
-    public static void setDataDir(File dataDirIn) {
-        file = new File(dataDirIn, "/dataLog.txt");
-    }
-
     public static void setDataDirDB(File dataDirIn) {
         dataDir = dataDirIn;
     }
     public File getDataDir(){
         return dataDir;
-    }
-
-    @Deprecated
-    public static void setBackupDir(File backUpDirIn) {
-        logFile = new File(backUpDirIn, "/logB.txt");
     }
 
     public static void setBackupDirDB(File backupDirIn) {
@@ -141,10 +140,13 @@ public class BarcodeValidator {
         return false;
     }
 
-    private void parseRegexFromProps() {
-        PropertiesManager propertiesManager = PropertiesManager.getInstance();
-        String delimiter = propertiesManager.getProperty("regex_delimiter");
-        String regString = propertiesManager.getProperty("regex");
+    /**
+     * Parses validation rules as retrieved from the {@link PropertiesManager} into {@link Pattern} objects added to
+     * {@link #regex}.
+     */
+    private static void parseRegexFromProps() {
+        String delimiter = PropertiesManager.getInstance().getProperty("regex_delimiter");
+        String regString = PropertiesManager.getInstance().getProperty("regex");
         String[] regs = regString.split(delimiter);
         for (String reg : regs) {
             Pattern pattern = Pattern.compile(reg);
