@@ -39,7 +39,7 @@ public class CreateLogFXMLController {
      */
     public static final String ID = "createLog";
     @FXML
-    RadioButton thisWeekRB, lastWeekRB, todayRB, customRB, newSinceRB;
+    RadioButton thisWeekRB, lastWeekRB, todayRB, customRB, newSinceRB, allRB;
     @FXML
     ToggleGroup createLogRadioGroup;
     @FXML
@@ -81,6 +81,7 @@ public class CreateLogFXMLController {
         todayRB.setUserData(TODAY);
         customRB.setUserData(CUSTOM);
         newSinceRB.setUserData(SINCE_LAST);
+        allRB.setUserData(ALL);
         //create and set ChangeListener on ToggleGroup to enable or disable DatePickers depending on which Toggle is
         //selected
         createLogRadioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
@@ -195,14 +196,24 @@ public class CreateLogFXMLController {
         Button button = (Button) event.getTarget();
         File saveFile = getSaveFile(button,initialFileName);
         if (saveFile != null) {
-            if (mode==SINCE_LAST) {
-                //LocalDateTime.parse takes only yyyy-mm-ddThh:mm:ss format. To change that is a faff, replacing the
-                //space is easier.
-                LocalDateTime fromDateTime = LocalDateTime.parse(runsListView.getSelectionModel().getSelectedItem().replace(" ", "T"));
-                PropertiesManager.getInstance().addToLogRunsHistory(LocalDateTime.now());
-                logParser.createLog(saveFile, mode, removals, fromDateTime);
-            } else {
-                logParser.createLog(saveFile, mode, removals, dates.get(FROM), dates.get(TO));
+            switch (mode){
+                case SINCE_LAST:
+                    LocalDateTime fromDateTime;
+                    if(runsListView.getSelectionModel().getSelectedItem().equals("")){//if there is no previous run
+                        fromDateTime=null;
+                    }else{
+                        //LocalDateTime.parse takes only yyyy-mm-ddThh:mm:ss format. To change that is a faff, replacing the
+                        //space is easier.
+                        fromDateTime = LocalDateTime.parse(runsListView.getSelectionModel().getSelectedItem().replace(" ", "T"));
+                    }
+                    PropertiesManager.getInstance().addToLogRunsHistory(LocalDateTime.now());
+                    logParser.createLog(saveFile, mode, removals, fromDateTime);
+                    break;
+                case ALL:
+                    logParser.createLog(saveFile,mode,removals,null);
+                    break;
+                default:
+                    logParser.createLog(saveFile, mode, removals, dates.get(FROM), dates.get(TO));
             }
             Stage stage = (Stage) button.getScene().getWindow();
             WindowManager.deregisterStage(ID);
@@ -225,6 +236,10 @@ public class CreateLogFXMLController {
                 break;
             case SINCE_LAST:
                 dates.put(FROM,LocalDate.now());
+                dates.put(TO, null);
+                break;
+            case ALL:
+                dates.put(FROM, null);
                 dates.put(TO, null);
                 break;
             default:
@@ -250,6 +265,9 @@ public class CreateLogFXMLController {
                 break;
             case SINCE_LAST:
                 fileName = "barcodeValidatorLog_"+dates.get(FROM).toString();
+                break;
+            case ALL:
+                fileName = "barcodeValidatorLog_all";
                 break;
             default:
                 fileName = "barcodeValidatorLog_" + dates.get(FROM).toString();

@@ -1,5 +1,6 @@
 package com.meriban.barcodevalidator;
 
+import com.meriban.barcodevalidator.managers.FileManager;
 import com.meriban.barcodevalidator.managers.PropertiesManager;
 
 import java.io.File;
@@ -22,7 +23,8 @@ public class LogParser {
         LAST_WEEK,
         TODAY,
         CUSTOM,
-        SINCE_LAST
+        SINCE_LAST,
+        ALL
     }
     public static final int FROM = 0;
     public static final int TO = 1;
@@ -43,21 +45,31 @@ public class LogParser {
     }
 
     public void createLog(File saveFile, Mode modeIn, boolean removals, LocalDateTime fromIn){
-        if(modeIn==Mode.SINCE_LAST){
-            databaseHandler = DatabaseHandler.getInstance();
-            barcodeValidator = Validator.getInstance();
-            File dataDir = barcodeValidator.getDataDir();
+        if(modeIn==Mode.SINCE_LAST||modeIn==Mode.ALL){
+            File dataDir = FileManager.getInstance().getDataDirectory();
             StringBuilder builder = new StringBuilder();
             builder.append("BARCODE, DATE, ACTION\n");
-            //just getting rid of the "T" and replacing it with " " again for the query
-            try (ResultSet results = databaseHandler.connectToDatabase(dataDir, "testdb.db").betweenDateTimeQuery(fromIn.toString().replace("T"," "), removals)) {
-                while (results.next()){
-                    builder.append(results.getString(1)).append(",");
-                    builder.append(results.getString(2)).append(",");
-                    builder.append(results.getInt(3)).append("\n");
+            if(fromIn!=null) {
+                //just getting rid of the "T" and replacing it with " " again for the query   connectToDatabase(dataDir, "testdb.db").
+                try (ResultSet results = DatabaseHandler.betweenDateTimeQuery(dataDir, FileManager.getInstance().getDatabaseName(), fromIn.toString().replace("T", " "), removals)) {
+                    while (results.next()) {
+                        builder.append(results.getString(1)).append(",");
+                        builder.append(results.getString(2)).append(",");
+                        builder.append(results.getInt(3)).append("\n");
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            }else{
+                try(ResultSet results = DatabaseHandler.getAll(dataDir, FileManager.getInstance().getDatabaseName(), removals)) {
+                    while (results.next()) {
+                        builder.append(results.getString(1)).append(",");
+                        builder.append(results.getString(2)).append(",");
+                        builder.append(results.getInt(3)).append("\n");
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
             write(builder, saveFile);
         }else{ //this shouldn't happen, but just in case
@@ -66,9 +78,7 @@ public class LogParser {
     }
 
     public void createLog(File saveFile, Mode modeIn, boolean removals, LocalDate fromIn, LocalDate toIn) {
-        databaseHandler = DatabaseHandler.getInstance();
-        barcodeValidator = Validator.getInstance();
-        File dataDir = barcodeValidator.getDataDir();
+        File dataDir = FileManager.getInstance().getDataDirectory();
         String fromDate;
         String toDate;
         if (modeIn == Mode.CUSTOM) {
@@ -83,7 +93,7 @@ public class LogParser {
         }
         StringBuilder builder = new StringBuilder();
         builder.append("BARCODE, DATE, ACTION\n");
-        try (ResultSet results = databaseHandler.connectToDatabase(dataDir, "testdb.db").betweenDateQuery(fromDate, toDate, removals)) {
+        try (ResultSet results = DatabaseHandler.betweenDateQuery(dataDir,FileManager.getInstance().getDatabaseName(),fromDate, toDate, removals)) {
             while (results.next()){
                 builder.append(results.getString(1)).append(",");
                 builder.append(results.getString(2)).append(",");
@@ -161,7 +171,7 @@ public class LogParser {
 
     private void write(StringBuilder builder, File saveFile){
         try {
-            FileWriter writer = new FileWriter(saveFile, true);
+            FileWriter writer = new FileWriter(saveFile, false);
             writer.write(builder.toString());
             writer.close();
         } catch (IOException e) {

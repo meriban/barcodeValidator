@@ -1,6 +1,9 @@
 package com.meriban.barcodevalidator.controllers;
 
+import com.meriban.barcodevalidator.Action;
+import com.meriban.barcodevalidator.DatabaseHandler;
 import com.meriban.barcodevalidator.Validator;
+import com.meriban.barcodevalidator.managers.FileManager;
 import com.meriban.barcodevalidator.navigators.WindowManager;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -14,6 +17,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+
+import java.util.Objects;
 
 /**
  * FXML Controller for the application's main window scene.
@@ -35,20 +40,18 @@ public class MainFXMLController {
     private Tab removeTab, addTab, refTab, loanTab;
     @FXML
     private TabPane tabPane;
-    Validator barcodeValidator;
 
     /**
      * Carries out post-loading setup. This method is called after the
      * controller has been initialised and all control variables injected.
-     * <p>Associates tab {@code TextField}s with actions.</p>
+     * <p>Associates tab {@code TextField}s with an {@link Action} using user data.</p>
      */
     @FXML
     public void initialize() {
-        barcodeValidator = Validator.getInstance();
-        shlBarcodeAddTextField.setUserData(Validator.ADD);
-        shlBarcodeRemoveTextField.setUserData(Validator.REMOVE);
-        shlBarcodeRefTextField.setUserData(Validator.TO_LOAN);
-        shlBarcodeLoanTextField.setUserData(Validator.TO_REF);
+        shlBarcodeAddTextField.setUserData(Action.ADD);
+        shlBarcodeRemoveTextField.setUserData(Action.REMOVE);
+        shlBarcodeRefTextField.setUserData(Action.TO_LOAN);
+        shlBarcodeLoanTextField.setUserData(Action.TO_REF);
         Platform.runLater(() -> shlBarcodeAddTextField.requestFocus());
     }
 
@@ -70,13 +73,13 @@ public class MainFXMLController {
     @FXML
     private void handleTextFieldInput(ActionEvent event) {
         TextField target = (TextField) event.getTarget();
-        Integer action = (Integer) target.getUserData();
+        Action action = (Action) target.getUserData();
         String targetID = target.getId(); //get the TextField's ID (pattern F1TextField)
         String labelID = "#" + targetID.substring(0, 2) + "Label"; //prefix # need for lookup() ; F? + Label = node ID of label in this tab
         Node label = target.getParent().lookup(labelID); //retrieve label by its ID
-        if (barcodeValidator.validate(target.getText(), action)) {
+        if (Validator.validateInput(Objects.requireNonNull(target.getText()))) {
             label.setVisible(false);
-            if (barcodeValidator.writeToDatabases()) {
+            if (DatabaseHandler.writeToDatabases(FileManager.getInstance().getSaveLocations(), "LOG",target.getText(),action)) {
                 displayInput(target);
             }
         } else {

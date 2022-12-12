@@ -1,10 +1,14 @@
 package com.meriban.barcodevalidator.controllers;
 
 import com.meriban.barcodevalidator.navigators.SettingsSubSceneManager;
+import com.meriban.barcodevalidator.navigators.WindowManager;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+
 /**
  * FXML Controller for the application's settings window scene.
  *
@@ -46,6 +50,14 @@ public class SettingsFXMLController {
         if (!SettingsSubSceneManager.getCurrentSubScene().equals(SettingsSubSceneManager.START_OF_WEEK_SCENE)) {
             SettingsSubSceneManager.loadSubScene(SettingsSubSceneManager.START_OF_WEEK_SCENE, (Node) event.getTarget());
         }
+    }
+
+    @FXML
+    private void handleCancelButtonOnAction(Event event){
+        Button button = (Button) event.getTarget();
+        Stage stage = (Stage) button.getScene().getWindow();
+        WindowManager.deregisterStage(ID);
+        stage.close();
     }
 
     /**

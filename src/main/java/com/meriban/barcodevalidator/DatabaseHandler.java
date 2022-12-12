@@ -4,62 +4,72 @@ import javafx.util.Pair;
 
 import java.io.File;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
 
 public class DatabaseHandler {
     // static variable single_instance of type Singleton
-    private static DatabaseHandler handler = null;
-    private static Connection connection = null;
     public static final int DONE = 1;
     public static final int CONNECTION_CLOSED = 0;
     public static final int NOT_CONNECTED = -1;
     public static final int TABLE_NOT_EXIST = -2;
     public static final int DUPLICATE = -3;
-    // private constructor restricted to this class itself
-    private DatabaseHandler(){
-    }
-
-    // static method to create instance of Singleton class
-    public static DatabaseHandler getInstance() {
-        if (handler == null)
-            handler = new DatabaseHandler();
-        return handler;
-    }
-     public DatabaseHandler connectToDatabase(File dataDirectory, String databaseName) throws SQLException {
+//    public DatabaseHandler connectToDatabase(File dataDirectory, String databaseName) throws SQLException {
+//        String url = "jdbc:sqlite:"+ dataDirectory.getAbsolutePath() + "\\"+databaseName;
+//        //System.out.println(url);
+//        connection = DriverManager.getConnection(url);
+//        return handler;
+//    }
+    private static Connection connectToDatabase(File dataDirectory, String databaseName) throws SQLException {
         String url = "jdbc:sqlite:"+ dataDirectory.getAbsolutePath() + "\\"+databaseName;
-         //System.out.println(url);
-             connection = DriverManager.getConnection(url);
-             return handler;
-     }
-
-     public int write(String barcode, int action) throws SQLException {
-        if(connection==null){
-            return NOT_CONNECTED;
+        return DriverManager.getConnection(url);
+    }
+    public static boolean writeToDatabases(HashMap<String, File> databases, String table, String value, Action action ){
+        ArrayList<Boolean> done = new ArrayList<>();
+        for (String database : databases.keySet()){
+            boolean success = write(databases.get(database), database, table, value, action);
+            done.add(success);
         }
-        if(connection.isClosed()){
-            return CONNECTION_CLOSED;
-        }
-        if(!tableExists("LOG")) {
-            return TABLE_NOT_EXIST;
-        }else {
-            Pair<Integer,ResultSet> results = checkForExistingEntry(barcode);
-                if (results == null) {
-                    PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO LOG(barcode,date,action) VALUES (?,datetime('now'),?)");
-                    preparedStatement.setString(1, barcode);
-                    //preparedStatement.setString(2, date);
-                    preparedStatement.setInt(2, action);
-                    preparedStatement.executeUpdate();
-                    return DONE;
-                } else {
-                    if(results.getKey()==1){
-                        return overwrite(barcode, action);
-                    }else{
-                        return DUPLICATE;
+        return !done.contains(false);
+    }
+    public static boolean write(File dataDirectory, String databaseName, String table,String value, Action action ){
+        try {
+            Connection connection = connectToDatabase(dataDirectory,databaseName);
+            if(connection !=null && !connection.isClosed()){
+                if(tableExists(connection, table)){
+                    Pair<Integer,ResultSet> results = checkForExistingEntry(connection, value);
+                    if (results == null) {
+                        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO LOG(barcode,date,action) VALUES (?,datetime('now'),?)");
+                        preparedStatement.setString(1, value);
+                        preparedStatement.setInt(2, action.getActionValue());
+                        preparedStatement.executeUpdate();
+                        connection.close();
+                        return true;
+                    } else {
+                        if(results.getKey()==1){
+                            return overwrite(connection, value, action);
+                        }else{
+                            System.out.println(value + " with action " + action + " could not be written to "+databaseName + " as there is more than one entry with this barcode in table.");
+                            connection.close();
+                            return false;
+                        }
                     }
-                }
+                }else{
+                    System.out.println(value + " with action " + action + " could not be written to " +databaseName + " as SQL table does not exist on writeToDatabases attempt.");
+                    connection.close();
+                    return false;}
+            }else{
+                if(connection==null){System.out.println(value + " with action " + action + " could not be written to "+databaseName+" as SQL Connection was null on writeToDatabases attempt."); return false;}
+                if(Objects.requireNonNull(connection).isClosed()){System.out.println(value + " with action " + action + " could not be written to "+databaseName+" as SQL Connection was closed on writeToDatabases attempt."); return false;}
             }
-     }
-
-     private static boolean tableExists(String table) throws SQLException {
+            connection.close();
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+    private static boolean tableExists(Connection connection, String table) throws SQLException {
         if(connection!=null){
             DatabaseMetaData dbm = connection.getMetaData();
             ResultSet tables = dbm.getTables(null, null, table,null);
@@ -82,7 +92,7 @@ public class DatabaseHandler {
         return false;
      }
 
-     private static Pair<Integer,ResultSet> checkForExistingEntry(String barcode) throws SQLException {
+     private static Pair<Integer,ResultSet> checkForExistingEntry(Connection connection, String barcode) throws SQLException {
          Pair<Integer,ResultSet> pair;
          PreparedStatement countStatement = connection.prepareStatement("SELECT COUNT(*) FROM LOG WHERE barcode = ?");
          countStatement.setString(1, barcode);
@@ -103,47 +113,60 @@ public class DatabaseHandler {
          }
      }
 
-     private int overwrite(String barcode, int action) throws SQLException {
+     private static boolean overwrite(Connection connection, String barcode, Action action) throws SQLException {
         PreparedStatement updateStatement = connection.prepareStatement("UPDATE LOG SET date = datetime('now'), action = ? WHERE barcode = ?");
-        //updateStatement.setString(1, date);
-        updateStatement.setInt(1, action);
+        updateStatement.setInt(1, action.getActionValue());
         updateStatement.setString(2, barcode);
         updateStatement.executeUpdate();
-        return DONE;
-     }
-     public void closeConnection() throws SQLException {
         connection.close();
+        return true;
      }
 
-     public ResultSet singleDateQuery(String date) throws SQLException {
+     public static ResultSet singleDateQuery(File dataDirectory, String databaseName, String date) throws SQLException {
         ResultSet results;
+        Connection connection = connectToDatabase(dataDirectory,databaseName);
         PreparedStatement queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date = date(\""+date+"\")");
         results = queryStatement.executeQuery();
         return results;
      }
 
-     public ResultSet betweenDateQuery (String fromDate, String toDate, boolean removals) throws SQLException {
+     public static ResultSet betweenDateQuery (File dataDirectory, String databaseName, String fromDate, String toDate, boolean removals) throws SQLException {
         ResultSet results;
+        Connection connection = connectToDatabase(dataDirectory, databaseName);
         PreparedStatement queryStatement;
         if(removals){
             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")");
         }else{
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")) AND (action IS NOT "+ Validator.REMOVE+")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")) AND (action IS NOT "+ Action.REMOVE.getActionValue()+")");
         }
         results = queryStatement.executeQuery();
         return results;
      }
 
-     public ResultSet betweenDateTimeQuery(String fromDateTime, boolean removals) throws SQLException{
+     public static ResultSet betweenDateTimeQuery(File dataDirectory, String databaseName, String fromDateTime, boolean removals) throws SQLException{
         ResultSet results;
+        Connection connection = connectToDatabase(dataDirectory, databaseName);
         PreparedStatement queryStatement;
         if(removals){
             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")");
         }else{
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")) AND (action IS NOT "+ Validator.REMOVE+")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")) AND (action IS NOT "+ Action.REMOVE.getActionValue()+")");
         }
         results = queryStatement.executeQuery();
         return results;
+     }
+
+     public static ResultSet getAll(File dataDirectory, String databaseName, boolean removals)throws SQLException{
+         ResultSet results;
+         Connection connection = connectToDatabase(dataDirectory, databaseName);
+         PreparedStatement queryStatement;
+         if(removals){
+             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG");
+         }else{
+             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (action IS NOT "+ Action.REMOVE.getActionValue()+")");
+         }
+         results = queryStatement.executeQuery();
+         return results;
      }
 
 }
