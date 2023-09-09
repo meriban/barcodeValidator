@@ -1,6 +1,6 @@
 ## USE
 
-- Download content of most recent deploy in "Deploy"
+- Download content of most recent deploy in [`Deploy`](https://github.com/meriban/barcodeValidator/tree/main/deploy)
 - Move where ever you want on your machine
 - Navigate to `bin\BarcodeValidator.bat` and run
 - Create shortcut to `.bat` file if wanted
