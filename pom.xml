@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>BarcodeValidator</artifactId>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -29,12 +30,10 @@
             <version>3.39.3.0</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>24.0.1</version>
         </dependency>
-
     </dependencies>
 
     <properties>

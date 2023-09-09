@@ -1,5 +1,6 @@
 package com.meriban.barcodevalidator.controllers;
 
+import com.meriban.barcodevalidator.DateParser;
 import com.meriban.barcodevalidator.LogParser;
 import com.meriban.barcodevalidator.managers.PropertiesManager;
 import com.meriban.barcodevalidator.navigators.WindowManager;
@@ -14,6 +15,7 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.time.DayOfWeek;
@@ -21,9 +23,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
-import static com.meriban.barcodevalidator.LogParser.FROM;
-import static com.meriban.barcodevalidator.LogParser.Mode.*;
-import static com.meriban.barcodevalidator.LogParser.TO;
+import static com.meriban.barcodevalidator.DateParser.FROM;
+import static com.meriban.barcodevalidator.DateParser.TO;
+import static com.meriban.barcodevalidator.LogParser.LogMode.*;
 
 /**
  * FXML Controller for the application's log creation window scene.
@@ -52,16 +54,12 @@ public class CreateLogFXMLController {
     Label weekLabel;
     @FXML
     ListView<String> runsListView;
-
-    LogParser logParser;
-
     /**
      * Carries out post-loading setup. This method is called after the controller has been initialised and all control
      * variables injected.
      */
     @FXML
     public void initialize() {
-        logParser = LogParser.getInstance();
         setUpRadioButtonsGroup();
         populateStartOfWeekInfoLabel();
         populateRunsListView();
@@ -71,7 +69,7 @@ public class CreateLogFXMLController {
     /**
      * Sets up {@code RadioButtons} and their {@code ToggleGroup}.
      * <p>Associates {@code RadioButtons} with actions using setUserData and supplying the respective
-     * {@link com.meriban.barcodevalidator.LogParser.Mode} constant</p>
+     * {@link LogParser.LogMode} constant</p>
      * <p>Set {@code ChangeListener} on {@code ToggleGroup} to control enabling and disabling of {@code DatePickers}
      * and log runs {@code ListView}.</p>
      */
@@ -88,7 +86,7 @@ public class CreateLogFXMLController {
             @Override
             public void changed(ObservableValue<? extends Toggle> observableValue, Toggle oldToggle, Toggle newToggle) {
                 if (createLogRadioGroup.getSelectedToggle() != null) {
-                    switch ((LogParser.Mode) createLogRadioGroup.getSelectedToggle().getUserData()) {
+                    switch ((LogParser.LogMode) createLogRadioGroup.getSelectedToggle().getUserData()) {
                         case CUSTOM:
                             fromDatePicker.setDisable(false);
                             toDatePicker.setDisable(false);
@@ -177,7 +175,7 @@ public class CreateLogFXMLController {
 
     /**
      * Controls behaviour when the {@link #createLogButton} is clicked.
-     * <p>The {@link com.meriban.barcodevalidator.LogParser.Mode} is retrieved from the selected {@code RadioButton}'s
+     * <p>The {@link LogParser.LogMode} is retrieved from the selected {@code RadioButton}'s
      * user data, the state of the {@link #includeRemovalsCheckBox} evaluated and a save file created. The retrieved
      * data is then passed to the {@link LogParser} and the window deregistered from the {@link WindowManager} and
      * closed.</p>
@@ -185,18 +183,23 @@ public class CreateLogFXMLController {
      */
     @FXML
     private void handleCreateLogButtonOnAction(Event event) {
-        LogParser.Mode mode = (LogParser.Mode) createLogRadioGroup.getSelectedToggle().getUserData();
+        LocalDateTime now = LocalDateTime.now();
+        PropertiesManager.getInstance().updateApplicationProperty("last_run", now.toString());
+        LogParser.LogMode mode = (LogParser.LogMode) createLogRadioGroup.getSelectedToggle().getUserData();
         //if none of the previous runs are selected do nothing
         if(mode==SINCE_LAST && runsListView.getSelectionModel().getSelectedItem()==null){
             return;
         }
         boolean removals = includeRemovalsCheckBox.isSelected();
-        HashMap<Integer, LocalDate> dates = retrieveDates(mode);
+        HashMap<Integer, LocalDate> dates = DateParser.getFileNameDates(mode, fromDatePicker.getValue(), toDatePicker.getValue());
         String initialFileName = createFileName(mode, dates);
         Button button = (Button) event.getTarget();
         File saveFile = getSaveFile(button,initialFileName);
         if (saveFile != null) {
             switch (mode){
+                case CUSTOM:
+                    LogParser.createLog(saveFile, mode, removals, fromDatePicker.getValue(), toDatePicker.getValue());
+                    break;
                 case SINCE_LAST:
                     LocalDateTime fromDateTime;
                     if(runsListView.getSelectionModel().getSelectedItem().equals("")){//if there is no previous run
@@ -206,58 +209,29 @@ public class CreateLogFXMLController {
                         //space is easier.
                         fromDateTime = LocalDateTime.parse(runsListView.getSelectionModel().getSelectedItem().replace(" ", "T"));
                     }
-                    PropertiesManager.getInstance().addToLogRunsHistory(LocalDateTime.now());
-                    logParser.createLog(saveFile, mode, removals, fromDateTime);
+                    PropertiesManager.getInstance().addToLogRunsHistory(now);
+                    LogParser.createLog(saveFile, mode, removals, fromDateTime);
                     break;
                 case ALL:
-                    logParser.createLog(saveFile,mode,removals,null);
+                    LogParser.createLog(saveFile,mode,removals,null);
                     break;
                 default:
-                    logParser.createLog(saveFile, mode, removals, dates.get(FROM), dates.get(TO));
+                    LogParser.createLog(saveFile, mode, removals, dates.get(FROM), dates.get(TO));
             }
             Stage stage = (Stage) button.getScene().getWindow();
             WindowManager.deregisterStage(ID);
             stage.close();
         }
     }
-
-    /**
-     * Retrieves dates from {@code DatePickers} or computes them from the respective
-     * {@link com.meriban.barcodevalidator.LogParser.Mode}.
-     * @param mode the {@link com.meriban.barcodevalidator.LogParser.Mode}
-     * @return the from date (key {@link LogParser#FROM}) and to date (key {@link LogParser#TO}) as {@link LocalDate}.
-     */
-    private HashMap<Integer, LocalDate> retrieveDates(LogParser.Mode mode){
-        HashMap<Integer, LocalDate> dates = new HashMap<>();
-        switch (mode) {
-            case CUSTOM:
-                dates.put(FROM, fromDatePicker.getValue());
-                dates.put(TO, toDatePicker.getValue());
-                break;
-            case SINCE_LAST:
-                dates.put(FROM,LocalDate.now());
-                dates.put(TO, null);
-                break;
-            case ALL:
-                dates.put(FROM, null);
-                dates.put(TO, null);
-                break;
-            default:
-                String startOfWeek = PropertiesManager.getInstance().getApplicationProperties().getProperty("start_of_week");
-                dates = logParser.computeDatesForDisplay(mode, DayOfWeek.valueOf(startOfWeek));
-        }
-        return dates;
-    }
-
     /**
      * Creates a file name consisting of "barcodeValidatorLog" and the date range reported on, each separated by "_",
      * e.g. {@code barcodeValidatorLog_2022-11-28_2022-12-04.txt}.
      * If there is no to date only the from date will be used.
-     * @param mode the {@link LogParser.Mode}
-     * @param dates the dates retrieved from the GUI or computed based on the respective {@code Mode}.
+     * @param mode the {@link LogParser.LogMode}
+     * @param dates the dates retrieved from the GUI or computed based on the respective {@code LogMode}.
      * @return the file name
      */
-    private String createFileName(LogParser.Mode mode, HashMap<Integer, LocalDate> dates){
+    private String createFileName(@NotNull LogParser.LogMode mode, HashMap<Integer, LocalDate> dates){
         String fileName;
         switch (mode){
             case CUSTOM:
@@ -285,7 +259,7 @@ public class CreateLogFXMLController {
      * @param fileName the file name populating the {@code FileChooser}
      * @return the save file
      */
-    private File getSaveFile(Node node, String fileName){
+    private File getSaveFile(@NotNull Node node, String fileName){
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Text Files", "*.txt"),
@@ -301,7 +275,7 @@ public class CreateLogFXMLController {
      * @param event the button interaction event
      */
     @FXML
-    private void handleCancelButtonOnAction(Event event){
+    private void handleCancelButtonOnAction(@NotNull Event event){
         Button button = (Button) event.getTarget();
         Stage stage = (Stage) button.getScene().getWindow();
         WindowManager.deregisterStage(ID);

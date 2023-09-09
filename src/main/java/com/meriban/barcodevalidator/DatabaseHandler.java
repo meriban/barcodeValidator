@@ -4,23 +4,14 @@ import javafx.util.Pair;
 
 import java.io.File;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class DatabaseHandler {
-    // static variable single_instance of type Singleton
-    public static final int DONE = 1;
-    public static final int CONNECTION_CLOSED = 0;
-    public static final int NOT_CONNECTED = -1;
-    public static final int TABLE_NOT_EXIST = -2;
-    public static final int DUPLICATE = -3;
-//    public DatabaseHandler connectToDatabase(File dataDirectory, String databaseName) throws SQLException {
-//        String url = "jdbc:sqlite:"+ dataDirectory.getAbsolutePath() + "\\"+databaseName;
-//        //System.out.println(url);
-//        connection = DriverManager.getConnection(url);
-//        return handler;
-//    }
+
     private static Connection connectToDatabase(File dataDirectory, String databaseName) throws SQLException {
         String url = "jdbc:sqlite:"+ dataDirectory.getAbsolutePath() + "\\"+databaseName;
         return DriverManager.getConnection(url);
@@ -125,7 +116,8 @@ public class DatabaseHandler {
      public static ResultSet singleDateQuery(File dataDirectory, String databaseName, String date) throws SQLException {
         ResultSet results;
         Connection connection = connectToDatabase(dataDirectory,databaseName);
-        PreparedStatement queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date = date(\""+date+"\")");
+        PreparedStatement queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date = date(?)");
+        queryStatement.setString(1,date);
         results = queryStatement.executeQuery();
         return results;
      }
@@ -134,23 +126,45 @@ public class DatabaseHandler {
         ResultSet results;
         Connection connection = connectToDatabase(dataDirectory, databaseName);
         PreparedStatement queryStatement;
+
         if(removals){
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")");
+            //queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN date(?) AND date(?)");
+            queryStatement.setString(1,fromDate);
+            queryStatement.setString(2, toDate);
         }else{
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")) AND (action IS NOT "+ Action.REMOVE.getActionValue()+")");
+            //queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(\""+fromDate+"\") AND date(\""+toDate+"\")) AND (action IS NOT "+ Action.REMOVE.getActionValue()+")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN date(?) AND date(?)) AND (action IS NOT ?)");
+            queryStatement.setString(1,fromDate);
+            queryStatement.setString(2,toDate);
+            queryStatement.setInt(3,Action.REMOVE.getActionValue());
         }
         results = queryStatement.executeQuery();
         return results;
      }
 
-     public static ResultSet betweenDateTimeQuery(File dataDirectory, String databaseName, String fromDateTime, boolean removals) throws SQLException{
+     public static ResultSet betweenDateTimeQuery(File dataDirectory, String databaseName, LocalDateTime fromDateTime, boolean removals) throws SQLException{
+        LocalDateTime nowDT = LocalDateTime.now();
+        String now = DateParser.computeDateForQuery(nowDT);
+
+        LocalDateTime fromDT = fromDateTime;
+        if(TimeZone.getTimeZone("Europe/London").inDaylightTime(java.sql.Timestamp.valueOf(fromDT))){
+            fromDT = DateParser.adjustForDST(fromDT);
+        }
+        String fromDateTimeString = DateParser.computeDateForQuery(fromDT);
+
         ResultSet results;
         Connection connection = connectToDatabase(dataDirectory, databaseName);
         PreparedStatement queryStatement;
+
         if(removals){
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(?) AND datetime(?))");
+            queryStatement.setString(1,fromDateTimeString);
+            queryStatement.setString(2,now);
         }else{
-            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(\""+fromDateTime+"\") AND datetime(\"now\")) AND (action IS NOT "+ Action.REMOVE.getActionValue()+")");
+            queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (date BETWEEN datetime(?) AND datetime(\"now\")) AND (action IS NOT ?)");
+            queryStatement.setString(1,fromDateTimeString);
+            queryStatement.setInt(2,Action.REMOVE.getActionValue());
         }
         results = queryStatement.executeQuery();
         return results;
@@ -163,10 +177,13 @@ public class DatabaseHandler {
          if(removals){
              queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG");
          }else{
-             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (action IS NOT "+ Action.REMOVE.getActionValue()+")");
+             queryStatement = connection.prepareStatement("SELECT barcode, date, action FROM LOG WHERE (action IS NOT ?)");
+             queryStatement.setInt(1,Action.REMOVE.getActionValue());
          }
          results = queryStatement.executeQuery();
          return results;
      }
+
+
 
 }

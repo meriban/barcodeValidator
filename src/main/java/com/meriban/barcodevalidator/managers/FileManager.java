@@ -10,7 +10,6 @@ public class FileManager {
     private static File backupDirectory;
     private static String database;
     private static String backupDatabase;
-    private static boolean isSetup = false;
 
     private FileManager() {
         setup();
@@ -36,7 +35,6 @@ public class FileManager {
         }
         setDataBase(PropertiesManager.getInstance().getProperty("database_name"));
         setBackupDatabase(PropertiesManager.getInstance().getProperty("backup_database_name"));
-        isSetup=true;
     }
 
     private static void useDefaultDataDirectory() {

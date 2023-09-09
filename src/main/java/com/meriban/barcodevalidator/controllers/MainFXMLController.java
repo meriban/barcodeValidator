@@ -119,7 +119,7 @@ public class MainFXMLController {
         if (pane != null) {
             ObservableList<Tab> tabs = pane.getTabs();
             for (Tab tab : tabs) {
-                if (tab.getId() == target.getId()) {
+                if (Objects.equals(tab.getId(), target.getId())) {
                     target.setStyle("-fx-text-base-color: mediumseagreen;" + "-fx-font-weight: bold;");
                 } else {
                     tab.setStyle("-fx-text-base-color: black;" + "-fx-font-weight: regular;");

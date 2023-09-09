@@ -6,7 +6,7 @@ module com.meriban.barcodevalidator {
     requires java.desktop;
     requires org.jetbrains.annotations;
 
-    opens com.meriban.barcodevalidator to javafx.fxml, com.meriban.utilitiesroot, org.xerial.sqlitejdbc, java.sql;
+    opens com.meriban.barcodevalidator to javafx.fxml, com.meriban.utilitiesroot, org.xerial.sqlitejdbc, java.sql, org.jetbrains.annotations;
     opens com.meriban.barcodevalidator.controllers to javafx.fxml, com.meriban.utilitiesroot;
     exports com.meriban.barcodevalidator to javafx.fxml, javafx.graphics, com.meriban.utilitiesroot;
     exports com.meriban.barcodevalidator.controllers to javafx.fxml, javafx.graphics, com.meriban.utilitiesroot;
